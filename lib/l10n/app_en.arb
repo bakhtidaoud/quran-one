@@ -1,0 +1,56 @@
+{
+  "@@locale": "en",
+
+  "appName": "Quran One",
+
+  "ayahCount": "{count, plural, =0{No verses} =1{1 verse} other{{count} verses}}",
+  "@ayahCount": {
+    "description": "Verse count on a surah row.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "dueCards": "{count, plural, =0{Nothing due} =1{1 card due} other{{count} cards due}}",
+  "@dueCards": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "streakDays": "{count, plural, =1{1 day streak} other{{count} day streak}}",
+  "@streakDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "prayerIn": "{prayer} in {duration}",
+  "@prayerIn": {
+    "description": "Prayer names are NEVER translated. Fajr stays Fajr in every locale. Every user of this app already knows these six words; translating them helps nobody and signals the app was localised from outside the audience.",
+    "placeholders": {
+      "prayer": { "type": "String" },
+      "duration": { "type": "String" }
+    }
+  },
+
+  "surahLabel": "Surah {name}",
+  "@surahLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "pageOf": "Page {page} of 604",
+  "@pageOf": {
+    "placeholders": { "page": { "type": "int" } }
+  },
+
+  "offlineBanner": "Offline. Your changes are saved and will sync later.",
+  "syncPending": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
+  "@syncPending": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "errorNoConnection": "No connection",
+  "errorServer": "Something went wrong on our side",
+  "errorRateLimited": "Too many requests. Try again shortly.",
+  "retry": "Try again",
+
+  "hijriCalculated": "Calculated. Adjust if your local sighting differs.",
+  "@hijriCalculated": {
+    "description": "The civil calculated Hijri date and the locally sighted date differ by up to a day, and in Ramadan that difference decides whether someone fasts. The app never presents the calculated date as fact."
+  }
+}
