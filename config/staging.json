@@ -1,0 +1,6 @@
+{
+  "API_BASE_URL": "https://api-stg.quranone.app/v1",
+  "CDN_BASE_URL": "https://cdn-stg.quranone.app",
+  "ANALYTICS_ENABLED": true,
+  "LOG_LEVEL": "info"
+}

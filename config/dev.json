@@ -1,0 +1,6 @@
+{
+  "API_BASE_URL": "https://api-dev.quranone.app/v1",
+  "CDN_BASE_URL": "https://cdn-dev.quranone.app",
+  "ANALYTICS_ENABLED": false,
+  "LOG_LEVEL": "debug"
+}

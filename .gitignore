@@ -1,0 +1,52 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Generated
+*.g.dart
+*.freezed.dart
+*.gr.dart
+*.config.dart
+lib/l10n/generated/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+# Web
+web/flutter_service_worker.js
+
+# Coverage
+coverage/
+
+# Golden failures
+test/**/failures/
+
+# Secrets - never commit
+config/*.secret.json
+.env

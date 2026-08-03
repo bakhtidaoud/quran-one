@@ -1,0 +1,16 @@
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        options:
+          provider_name_suffix: Provider
+      freezed:
+        generate_for:
+          include:
+            - lib/**/models/**.dart
+            - lib/**/entities/**.dart
+            - lib/**/state/**.dart
+      json_serializable:
+        options:
+          field_rename: snake
+          explicit_to_json: true
