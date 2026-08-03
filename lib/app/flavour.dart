@@ -1,3 +1,7 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'flavour.g.dart';
+
 /// Build flavours. Selected at compile time by the entry point file.
 enum Flavour {
   dev,
@@ -30,9 +34,7 @@ class AppConfig {
           'CDN_BASE_URL',
           defaultValue: 'https://cdn.quranone.app',
         ),
-        analyticsEnabled = const bool.fromEnvironment(
-          'ANALYTICS_ENABLED',
-        ),
+        analyticsEnabled = const bool.fromEnvironment('ANALYTICS_ENABLED'),
         logLevel = const String.fromEnvironment(
           'LOG_LEVEL',
           defaultValue: 'warning',
@@ -50,3 +52,17 @@ class AppConfig {
   final bool analyticsEnabled;
   final String logLevel;
 }
+
+/// Root provider. Overridden in bootstrap.
+///
+/// Throwing here is deliberate: a provider that must be overridden should
+/// fail loudly at first read, not return a plausible default that works in
+/// dev and misbehaves in production.
+@Riverpod(keepAlive: true)
+AppConfig appConfig(Ref ref) =>
+    throw UnimplementedError('appConfigProvider must be overridden');
+
+/// Root provider. Overridden in bootstrap.
+@Riverpod(keepAlive: true)
+Flavour flavour(Ref ref) =>
+    throw UnimplementedError('flavourProvider must be overridden');
