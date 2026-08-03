@@ -1,14 +1,25 @@
 # Quran One
 
-Quran, prayer times, qibla and memorisation. Flutter for Android, iOS and web,
-with a Django REST backend.
+Quran, prayer times, qibla and memorisation.
+
+- **App** - Flutter, for Android, iOS and web.
+- **API** - Django 5.1 + DRF, PostgreSQL, Redis, Celery.
 
 Everything that matters works offline. The network is an update mechanism,
 never a read path.
 
+```
+.
+  lib/          Flutter application
+  test/         Flutter tests
+  assets/       bundled seed data
+  backend/      Django REST API
+  docs/         product, design and engineering documents
+```
+
 ---
 
-## Getting started
+## Run the app
 
 ```bash
 flutter pub get
@@ -16,22 +27,21 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run --target lib/main_dev.dart --dart-define-from-file=config/dev.json
 ```
 
-The second step is not optional. Riverpod providers, Drift tables and Freezed
-models are all generated; `.g.dart` files are gitignored on purpose so that
-generated code never appears in a diff.
+The second step is not optional. Riverpod providers, Drift tables and route
+definitions are generated; `.g.dart` files are gitignored so that generated
+code never appears in a diff.
 
-### Requirements
+Platform folders are not committed. Run `flutter create . --org app.quranone
+--platforms=android,ios,web` once after cloning; it fills in the missing
+Gradle, Xcode and web scaffolding and leaves `lib/` alone.
 
 | Tool | Version |
 | --- | --- |
 | Flutter | 3.29.x stable |
 | Dart | 3.7.x |
 | JDK | 17 |
-| Xcode | 16.x |
 | Android | compileSdk 35, minSdk 24 |
 | iOS | 14.0 |
-
-### Flavours
 
 | Flavour | Entry point | Config |
 | --- | --- | --- |
@@ -39,9 +49,23 @@ generated code never appears in a diff.
 | staging | `lib/main_staging.dart` | `config/staging.json` |
 | prod | `lib/main_prod.dart` | `config/prod.json` |
 
+## Run the API
+
+```bash
+cd backend
+cp .env.example .env
+docker compose up --build
+docker compose exec api python manage.py migrate
+```
+
+API at `http://localhost:8000/v1/`, OpenAPI docs at `/docs/`. Details in
+[`backend/README.md`](backend/README.md).
+
 ---
 
-## Project structure
+## Architecture
+
+### App
 
 ```
 lib/
@@ -53,79 +77,81 @@ lib/
   l10n/         translations
 ```
 
-### The one rule
-
 `domain/` depends on nothing. No Flutter, no Riverpod, no Drift, no Dio. If a
 domain folder cannot compile as plain Dart, the business rules are entangled
-with the framework and can no longer be tested cheaply. This is enforced by
+with the framework and can no longer be tested cheaply. Enforced by
 `test/architecture/layering_test.dart`, not by good intentions.
 
-### Dependency injection
-
-Riverpod is the only container. `app/di.dart` is the only file where an
+Riverpod is the only container, and `lib/app/di.dart` is the only file where an
 interface meets its implementation. Providers return interfaces, never `*Impl`
-types - there is a test for that too.
+types; there is a test for that too.
 
-Exactly three providers are overridden at the root, in `bootstrap.dart`:
-preferences, database and config. Three blocking startup tasks resolve them
-before the first frame, which is why no screen in the app renders a loading
-state for the database.
+### API
+
+```
+backend/
+  config/       settings split by environment, urls, celery
+  apps/core/    abstract models, error envelope, pagination, logging
+  apps/accounts/  user, profile, JWT auth
+  apps/quran/     surahs, ayat, translations, reciters, bookmarks
+  apps/content/   content pack catalogue and signed downloads
+  apps/prayer/    calculation methods, regional defaults, mosques
+  apps/sync/      devices, hifz cards, positions, conflict resolution
+  apps/billing/   subscriptions, entitlement, store webhooks
+```
+
+The API returns one error envelope for every failure. The Flutter client maps
+`error.code` onto its sealed `QFailure` hierarchy, which is why adding a code
+is treated as a breaking change.
 
 ---
 
-## What is here so far
+## Where the two halves disagree, on purpose
+
+**Prayer times have no endpoint.** They are computed on device. A prayer time
+that needs a network call fails on a plane, in a basement, and in the places
+with the most users and the worst connectivity.
+
+**Scripture is immutable server-side and absent client-side.** Surah and Ayah
+rows raise on update, including from the Django admin. The Uthmani text is not
+bundled in the app either - it arrives as a signed, checksummed content pack,
+so a correction ships without an app release and nothing unverified renders.
+
+**The client is authoritative, except for money.** Worship data syncs on the
+client's terms. Entitlement is the one thing derived server-side from a
+validated store receipt.
+
+**Nothing is hard-deleted.** Tombstones sync; absent rows do not.
+
+---
+
+## Current state
 
 | Area | State |
 | --- | --- |
-| Bootstrap, startup tasks, flavours | Implemented |
+| App bootstrap, flavours, startup tasks | Implemented |
 | Theme system: light, dark, AMOLED | Implemented, contrast-tested |
-| Typography, Arabic and Latin pairing | Implemented |
 | Router, four-destination shell | Implemented |
 | Quran domain, data, reader | Implemented against the seed index |
-| Prayer, qibla, hadith, azkar, learning | Screens stubbed |
-| Content pack pipeline | Not started |
-| Backend | Not started |
+| Prayer, qibla, hadith, azkar, learning screens | Stubbed |
+| API: auth, quran, content, prayer, sync, billing | Implemented |
+| Migrations | Not generated yet |
+| Content pack build pipeline | Not started |
 
-The Uthmani text is deliberately absent. Scripture ships as a signed,
-versioned content pack, not as a bundled asset, so that a correction can ship
-without an app release and so that nothing unverified ever renders.
-
----
-
-## Testing
+## Tests
 
 ```bash
 flutter test
+cd backend && pytest
 ```
 
-Five layers, cheapest first:
-
-1. Pure Dart - entities, value objects, prayer calculation, SRS scheduling.
-   No container, no widgets, no mocks.
-2. Use cases with hand-written fakes. Constructor injection means these need
-   no Riverpod at all.
-3. `ProviderContainer` with overrides, via `test/helpers/container.dart`.
-4. Widget and golden tests.
-5. Patrol journeys on real devices.
-
-Fakes are preferred over mocks. A fake survives an interface change as a
-compile error; a mock survives it as a runtime null.
-
----
+Fakes are preferred over mocks on both sides. A fake survives an interface
+change as a compile error; a mock survives it as a runtime null.
 
 ## Documentation
 
-Design and engineering documents live in [`docs/`](docs). Start with
+[`docs/`](docs) holds the product and engineering documents. Start with
 [`docs/BLUEPRINT.md`](docs/BLUEPRINT.md), then
-[`docs/CLEAN_ARCHITECTURE.md`](docs/CLEAN_ARCHITECTURE.md) and
-[`docs/DEPENDENCY_INJECTION.md`](docs/DEPENDENCY_INJECTION.md).
-
----
-
-## Principles
-
-1. Offline is the default, not a degraded mode.
-2. Sacred content is immutable and verified.
-3. Religious data is private by default.
-4. Worship paths never carry commerce.
-5. Content changes without an app release.
+[`docs/CLEAN_ARCHITECTURE.md`](docs/CLEAN_ARCHITECTURE.md),
+[`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md) and
+[`docs/API_SPECIFICATION.md`](docs/API_SPECIFICATION.md).
